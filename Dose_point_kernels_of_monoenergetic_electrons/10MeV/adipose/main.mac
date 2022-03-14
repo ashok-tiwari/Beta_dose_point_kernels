@@ -1,0 +1,134 @@
+# GATE Monte Carlo dose estimation using source: 10 MeV monoenergetic electrons in spherical adipose phantom #
+# Absorbed dose estimation macros #
+# Written by: Ashok Tiwari, Feb 13, 2019 #
+# PET Center, University of Iowa Hospitals and Clinics #
+
+#---------------------------------------------------------------------#
+#              1.   V E R B O S I T Y                                 #
+#---------------------------------------------------------------------#
+/gate/verbose Physic    0
+/gate/verbose Cuts	0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step	0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam	0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core	0
+
+/run/verbose 2
+/event/verbose 2
+/tracking/verbose 2
+/gate/geometry/setMaterialDatabase /Users/atiwr/gate_data_files/GateMaterials.db
+#----------------------------------------------------------------------#
+#                       2.    W O R L D                                #
+#----------------------------------------------------------------------#
+/gate/world/geometry/setXLength              80 cm
+/gate/world/geometry/setYLength              80 cm
+/gate/world/geometry/setZLength              80 cm
+/gate/world/setMaterial                      Water
+
+#----------------------------------------------------------------------#
+#             3.  P H A N T O M   G E O M E T R Y                      #
+#----------------------------------------------------------------------#
+/gate/world/daughters/name                   my_phantom
+/gate/world/daughters/insert                 sphere
+/gate/my_phantom/setMaterial                 Adipose
+
+/gate/my_phantom/geometry/setRmax            146.75 mm
+/gate/my_phantom/geometry/setRmin            0.0 mm
+/gate/my_phantom/vis/forceSolid
+/gate/my_phantom/vis/setColor                grey
+/gate/my_phantom/placement/setTranslation    0 0 0 mm
+/gate/my_phantom/attachPhantomSD
+
+#----------------------------------------------------------------------#
+#             4.    A C T O R S                                        #
+#----------------------------------------------------------------------#
+/gate/actor/addActor DoseActor              dosimetry
+/gate/actor/dosimetry/attachTo              my_phantom
+/gate/actor/dosimetry/stepHitType           post
+
+/gate/actor/dosimetry/setSize               293.5 293.5 293.5 mm
+/gate/actor/dosimetry/setVoxelSize          0.587 0.587 0.587 mm
+#/gate/actor/dosimetry/setResolution        500 500 500
+/gate/actor/dosimetry/setPosition           0 0 0 mm
+
+/gate/actor/dosimetry/enableDose            false
+/gate/actor/dosimetry/enableEdep            true
+/gate/actor/dosimetry/enableUncertaintyEdep true
+/gate/actor/dosimetry/enableSquaredEdep     true
+/gate/actor/dosimetry/save                  output/2e7_10MeV_adipose_post.mhd
+/gate/actor/dosimetry/saveEveryNSeconds     200
+
+/gate/actor/addActor                        SimulationStatisticActor stat
+/gate/actor/stat/save                       output/2e7_10MeV_adipose_stats_post.txt
+/gate/actor/stat/saveEveryNSeconds          200
+
+#----------------------------------------------------------------------#
+#             4.  P H Y S I C S                                        #
+#----------------------------------------------------------------------#
+/gate/physics/addPhysicsList  emstandard_opt3
+
+#/gate/physics/addProcess RayleighScattering
+#/gate/physics/processes/RayleighScattering/setModel PenelopeModel
+
+#----------------------------------------------------------------------#
+#          5. E L E C T R O M A G N E T I C    O P T I O N S           #
+#----------------------------------------------------------------------#
+/gate/physics/setEMin 0.1 keV
+/gate/physics/setEMax 10 GeV
+/gate/physics/setDEDXBinning   220
+/gate/physics/setLambdaBinning 220
+
+# Production cuts are absolutely necessasy to avoid infrared divergence
+/gate/physics/Gamma/SetCutInRegion	world 1 mm
+/gate/physics/Electron/SetCutInRegion   world 0.009 mm
+
+/gate/physics/Gamma/SetCutInRegion	my_phantom 0.8 mm    
+/gate/physics/Electron/SetCutInRegion   my_phantom 0.009 mm   
+
+/gate/physics/SetMaxStepSizeInRegion my_phantom 0.587 mm
+/gate/physics/ActivateStepLimiter e-
+
+/gate/physics/processes/ElectronIonisation/setStepFunction e- 0.0001  0.001 mm
+
+#----------------------------------------------------------------------#
+#                 6.  I N I T I A L I Z E                              #
+#----------------------------------------------------------------------#
+/gate/run/initialize
+/gate/physics/displayCuts
+/gate/physics/processList Enabled
+/gate/physics/processList Initialized
+
+#----------------------------------------------------------------------#
+#              7.  S O U R C E   D E F I N I T I O N                   #
+#----------------------------------------------------------------------#
+/gate/source/addSource  monoenergetic_electron              gps
+/gate/source/monoenergetic_electron/gps/particle            e-
+/gate/source/monoenergetic_electron/gps/energytype          Mono
+/gate/source/monoenergetic_electron/gps/ene/mono            10. MeV
+/gate/source/monoenergetic_electron/gps/angtype             iso
+/gate/source/monoenergetic_electron/gps/centre              0. 0. 0. mm
+/gate/source/monoenergetic_electron/gps/type                Point
+/gate/source/monoenergetic_electron/attachTo                my_phantom
+/gate/source/list
+
+#-----------------------------------------------------------------------#
+#    	8.  R A N D O M     G E N E R A T O R                           #
+#-----------------------------------------------------------------------#
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+/gate/random/verbose 2
+
+#-----------------------------------------------------------------------#
+#	9.   S T A R T    S I M U L A T I O N                           #
+#-----------------------------------------------------------------------#
+/gate/application/setTotalNumberOfPrimaries 2e7
+/gate/application/start
+

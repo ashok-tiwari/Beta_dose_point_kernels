@@ -1,0 +1,171 @@
+# GATE macros for the simulation of Y-90 beta emitter in bone to calculate the absorbed dose:
+
+
+---------------------------------------------------------------------#
+#                 V E R B O S I T Y                                   #
+#---------------------------------------------------------------------#
+#/control/execute  verbose.mac
+
+/gate/verbose Physic    0
+/gate/verbose Cuts	0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step	0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam	0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core	0
+
+/run/verbose 2
+/event/verbose 2
+/tracking/verbose 2
+
+/gate/geometry/setMaterialDatabase /Users/atiwr/gate_data_files/GateMaterials.db
+
+#----------------------------------------------------------------------#
+#                           W O R L D                                  #
+#----------------------------------------------------------------------#
+/gate/world/geometry/setXLength         5. cm
+/gate/world/geometry/setYLength         5. cm
+/gate/world/geometry/setZLength         5. cm
+/gate/world/setMaterial                 Water
+
+#----------------------------------------------------------------------#
+#                  P H A N T O M   G E O M E T R Y                     #
+#----------------------------------------------------------------------#
+/gate/world/daughters/name                 my_phantom
+/gate/world/daughters/insert               sphere
+/gate/my_phantom/setMaterial               CompactBone
+
+/gate/my_phantom/placement/setTranslation  0 0 0 mm
+/gate/my_phantom/geometry/setRmin          0. mm
+/gate/my_phantom/geometry/setRmax          13.50 mm
+#/gate/my_phantom/vis/forceSolid
+#/gate/my_phantom/vis/setColor             grey
+/gate/my_phantom/attachPhantomSD
+
+#----------------------------------------------------------------------#
+#               A C T O R S                                            #
+#----------------------------------------------------------------------#
+/gate/actor/addActor            DoseActor       small
+/gate/actor/small/attachTo                      my_phantom
+/gate/actor/small/stepHitType                   random  # post
+
+/gate/actor/small/setVoxelSize                  0.05979 0.05979 0.05979 mm
+#/gate/actor/small/setResolution                451 451 451
+/gate/actor/small/setSize                       26.96529 26.96529 26.96529 mm
+
+/gate/actor/small/setPosition                   -0.029895 -0.029895 -0.029895 mm
+/gate/actor/small/enableDose                    false
+/gate/actor/small/enableEdep                    true
+/gate/actor/small/enableUncertaintyEdep         true
+/gate/actor/small/enableSquaredEdep             true
+/gate/actor/small/save                          output/2e7_Y90_bone.mhd
+/gate/actor/small/saveEveryNSeconds             120
+
+/gate/actor/addActor                            SimulationStatisticActor stat
+/gate/actor/stat/save                           output/2e7_Y90_bone.txt
+/gate/actor/stat/saveEveryNSeconds              120
+
+#----------------------------------------------------------------------#
+#                  P H Y S I C S   D E S C R I P T I O N               #
+#----------------------------------------------------------------------#
+/gate/physics/addPhysicsList  emstandard_opt3
+/gate/physics/addProcess RayleighScattering
+/gate/physics/processes/RayleighScattering/setModel PenelopeModel
+
+# ---------------------------------------------------------------------#
+#                 ELECTROMAGNETIC OPTIONS                              #
+#----------------------------------------------------------------------#
+/gate/physics/setEMin 0.1 keV
+/gate/physics/setEMax 10 GeV
+/gate/physics/setDEDXBinning   220
+/gate/physics/setLambdaBinning 220
+
+/gate/physics/Gamma/SetCutInRegion      world 0.1 mm
+/gate/physics/Electron/SetCutInRegion   world 0.005 mm
+
+/gate/physics/Gamma/SetCutInRegion      my_phantom 0.1 mm
+/gate/physics/Electron/SetCutInRegion   my_phantom 0.0031 mm    # 4.99 keV energy cut in bone
+
+/gate/physics/SetMaxStepSizeInRegion    my_phantom 0.05979 mm
+/gate/physics/ActivateStepLimiter e-
+
+/gate/physics/processes/ElectronIonisation/setStepFunction e- 0.0001  0.001 mm
+
+#----------------------------------------------------------------------#
+#                     I N I T I A L I Z E                              #
+#----------------------------------------------------------------------#
+/gate/run/initialize
+/gate/physics/displayCuts
+/gate/physics/processList Enabled
+/gate/physics/processList Initialized
+
+#----------------------------------------------------------------------#
+#        Y-90  beta spectrum : Discrete spectrum                       #
+#----------------------------------------------------------------------#
+/control/execute sources_Y90_Histo.mac
+
+#/gate/source/addSource Y90betaspectrum            gps
+#/gate/source/Y90betaspectrum/attachTo             my_phantom
+#/gate/source/Y90betaspectrum/gps/particle         e-
+
+#/gate/source/Y90betaspectrum/gps/angtype          iso
+#/gate/source/Y90betaspectrum/gps/energytype	  Arb
+#/gate/source/Y90betaspectrum/setIntensity         1
+#/gate/source/Y90betaspectrum/gps/histname         arb
+#/gate/source/Y90betaspectrum/gps/position         0 0 0 mm
+#/gate/source/Y90betaspectrum/gps/type             Point
+
+#/gate/source/Y90betaspectrum/gps/setSpectrumFile  DiscreteSpectrum.txt
+
+######################################### Energy(MeV) ##### Intensity #
+#/gate/source/Y90betaspectrum/gps/hist/point   0             0.0
+#/gate/source/Y90betaspectrum/gps/hist/point   0.1142     4.26E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.2284     5.18E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.3426     5.94E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.4566     6.49E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.5710     6.86E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.6852     7.08E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.7994     7.17E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   0.9136     7.15E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.0278     7.04E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.1420     6.85E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.2562     6.57E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.3704     6.19E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.4846     5.69E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.5988     5.07E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.7130     4.30E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.8272     3.42E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   1.9414     2.46E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   2.0556     1.50E-02
+#/gate/source/Y90betaspectrum/gps/hist/point   2.1698     6.43E-03
+#/gate/source/Y90betaspectrum/gps/hist/point   2.2840     1.13E-03
+
+#/gate/source/Y90betaspectrum/gps/arbint Lin     # Spline
+
+# first column is energy in MeV and second is intensity
+# Refrence: doseinfo-radar.com/BetaSpec.zip
+
+#/gate/source/Y90betaspectrum/visualize            100 red 3
+#/gate/source/list
+
+/gate/output/verbose 2
+
+#-----------------------------------------------------------------------#
+#          R A N D O M     G E N E R A T O R                            #
+#-----------------------------------------------------------------------#
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+/gate/random/verbose 2
+
+#-----------------------------------------------------------------------#
+#          S T A R T   S I M U L A T I O N                              #
+#-----------------------------------------------------------------------#
+/gate/application/setTotalNumberOfPrimaries 2e7
+/gate/application/start

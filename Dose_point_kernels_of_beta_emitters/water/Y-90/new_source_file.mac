@@ -1,0 +1,34 @@
+/control/execute new_sources_Y90_histo.mac
+
+#=====================================================
+# monoenergetic photon emissions x-rays and gammas
+#=====================================================
+/gate/source/addSource                    mono_ph   gps
+/gate/source/mono_ph/gps/centre           -0.0553 -0.0553 -0.0553 mm
+/gate/source/mono_ph/gps/particle	  gamma
+
+/gate/source/mono_ph/gps/angtype          iso
+/gate/source/mono_ph/gps/energytype       UserSpectrum
+/gate/source/mono_ph/gps/histname	  energy
+/gate/source/mono_ph/setIntensity	  0.001466014
+/gate/source/mono_ph/gps/type             Point
+/gate/source/mono_ph/gps/setSpectrumFile  Y90dis-mono-ph.txt
+/gate/source/mono_ph/gps/confine          my_phantom_phys
+
+#=====================================================
+# monoenergetic discrete electron emissions Auger and IC
+#=====================================================
+/gate/source/addSource                   mono_el  gps
+/gate/source/mono_el/gps/centre          -0.0553 -0.0553 -0.0553 mm
+/gate/source/mono_el/gps/particle	 e-
+/gate/source/mono_el/gps/angtype         iso
+/gate/source/mono_el/setIntensity	 0.000115
+/gate/source/mono_el/gps/energytype      UserSpectrum
+/gate/source/mono_el/gps/histname  	 energy
+/gate/source/mono_el/gps/type            Point
+/gate/source/mono_el/gps/setSpectrumFile Y90dis-mono-el.txt
+/gate/source/mono_el/gps/confine         my_phantom_phys
+
+/gate/source/list
+/gate/output/verbose 2
+

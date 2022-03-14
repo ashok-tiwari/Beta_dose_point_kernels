@@ -1,0 +1,168 @@
+# GATE Monte Carlo dose estimation using beta spectrum of Re-186 in spherical water phantom #
+# in water
+
+#---------------------------------------------------------------------#
+#                 V E R B O S I T Y                                   #
+#---------------------------------------------------------------------#
+/gate/verbose Physic    0
+/gate/verbose Cuts	0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step	0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam	0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core	0
+
+/run/verbose 2
+/event/verbose 2
+/tracking/verbose 2
+
+/gate/geometry/setMaterialDatabase /Users/atiwr/gate_data_files/GateMaterials.db
+#----------------------------------------------------------------------#
+#                           W O R L D                                  #
+#----------------------------------------------------------------------#
+/gate/world/geometry/setXLength         5 cm
+/gate/world/geometry/setYLength         5 cm
+/gate/world/geometry/setZLength         5 cm
+/gate/world/setMaterial                 Water
+
+#----------------------------------------------------------------------#
+#                  P H A N T O M   G E O M E T R Y                     #
+#----------------------------------------------------------------------#
+/gate/world/daughters/name              my_phantom
+/gate/world/daughters/insert            sphere
+/gate/my_phantom/setMaterial            Water
+
+/gate/my_phantom/geometry/setRmax	6.7743 mm
+/gate/my_phantom/geometry/setRmin	0.   mm
+/gate/my_phantom/vis/forceSolid
+/gate/my_phantom/vis/setColor           grey
+/gate/my_phantom/placement/setTranslation 0 0 0 mm
+/gate/my_phantom/attachPhantomSD
+
+# sphere radius = dosel size * # of concentric shells
+
+#----------------------------------------------------------------------#
+#                   A C T O R S                                        #
+#----------------------------------------------------------------------#
+/gate/actor/addActor          DoseActor    dosimetry
+/gate/actor/dosimetry/attachTo             my_phantom
+/gate/actor/dosimetry/stepHitType          post
+
+#/gate/actor/dosimetry/setResolution	   351 351 351
+/gate/actor/dosimetry/setPosition          0 0 0 mm
+/gate/actor/dosimetry/setSize              13.5486 13.5486 13.5486  mm    
+/gate/actor/dosimetry/setVoxelSize         0.0386 0.0386 0.0386  mm
+
+/gate/actor/dosimetry/enableDose            true
+/gate/actor/dosimetry/enableEdep            true
+/gate/actor/dosimetry/enableUncertaintyEdep true
+/gate/actor/dosimetry/enableSquaredEdep     true
+/gate/actor/dosimetry/save                  output/2e7-Re186-water.mhd
+/gate/actor/dosimetry/saveEveryNSeconds     60
+
+/gate/actor/addActor                        SimulationStatisticActor stat
+/gate/actor/stat/save                       output/2e7_Re186_water_stats.txt
+/gate/actor/stat/saveEveryNSeconds          60
+#----------------------------------------------------------------------#
+#             P H Y S I C S        D E S C R I P T I O N               #
+#----------------------------------------------------------------------#
+/gate/physics/addPhysicsList  emstandard_opt3
+
+/gate/physics/addProcess RayleighScattering
+/gate/physics/processes/RayleighScattering/setModel PenelopeModel
+
+# ---------------------------------------------------------------------#
+#          E L E C T R O M A G N E T I C   O P T I O N S               #
+#----------------------------------------------------------------------#
+/gate/physics/setEMin 0.1 keV
+/gate/physics/setEMax 10 GeV
+/gate/physics/setDEDXBinning   220
+/gate/physics/setLambdaBinning 220
+
+/gate/physics/Gamma/SetCutInRegion	world 0.1 mm
+/gate/physics/Electron/SetCutInRegion   world 0.01 mm
+
+# range cut
+/gate/physics/Gamma/SetCutInRegion	my_phantom 0.1 mm     # 1 keV energy cut
+/gate/physics/Electron/SetCutInRegion   my_phantom 0.005 mm   # 3.86 keV energy cut
+
+/gate/physics/SetMaxStepSizeInRegion    my_phantom 0.0386 mm
+/gate/physics/ActivateStepLimiter e-
+
+/gate/physics/processes/ElectronIonisation/setStepFunction e- 0.0001  0.001 mm
+
+#----------------------------------------------------------------------#
+#                     I N I T I A L I Z E                              #
+#----------------------------------------------------------------------#
+/gate/run/initialize
+/gate/physics/displayCuts
+/gate/physics/processList Enabled
+/gate/physics/processList Initialized
+
+#----------------------------------------------------------------------#
+#         Re-186  Beta spectrum : Discrete spectrum                    #
+#----------------------------------------------------------------------#
+/gate/source/addSource 				Re186spectrum  gps  		        
+/gate/source/Re186spectrum/gps/particle        		e-
+
+/gate/source/Re186spectrum/gps/ene/type         	User
+/gate/source/Re186spectrum/gps/hist/type        	energy
+/gate/source/Re186spectrum/gps/hist/point 0             0.0
+/gate/source/Re186spectrum/gps/hist/point 0.0269        7.50E-02
+/gate/source/Re186spectrum/gps/hist/point 0.0807        7.80E-02
+/gate/source/Re186spectrum/gps/hist/point 0.1346        7.98E-02
+/gate/source/Re186spectrum/gps/hist/point 0.1884        8.03E-02
+/gate/source/Re186spectrum/gps/hist/point 0.2422        7.94E-02
+/gate/source/Re186spectrum/gps/hist/point 0.2961        7.71E-02
+/gate/source/Re186spectrum/gps/hist/point 0.3499        7.73E-02
+/gate/source/Re186spectrum/gps/hist/point 0.4037        6.92E-02
+/gate/source/Re186spectrum/gps/hist/point 0.4575        6.37E-02
+/gate/source/Re186spectrum/gps/hist/point 0.5114        5.73E-02
+/gate/source/Re186spectrum/gps/hist/point 0.5652        5.03E-02
+/gate/source/Re186spectrum/gps/hist/point 0.6190        4.28E-02
+/gate/source/Re186spectrum/gps/hist/point 0.6728        3.52E-02
+/gate/source/Re186spectrum/gps/hist/point 0.7266        2.77E-02
+/gate/source/Re186spectrum/gps/hist/point 0.7805        2.06E-02
+/gate/source/Re186spectrum/gps/hist/point 0.8343        1.41E-02
+/gate/source/Re186spectrum/gps/hist/point 0.8881        8.69E-02
+/gate/source/Re186spectrum/gps/hist/point 0.9419        4.59E-03
+/gate/source/Re186spectrum/gps/hist/point 0.9958        1.77E-03
+/gate/source/Re186spectrum/gps/hist/point 1.0496        3.48E-04
+
+# first column is energy in MeV and second is intensity
+# Reference: doseinfo-radar.com/BetaSpec.zip
+
+/gate/source/Re186spectrum/setIntensity         1
+/gate/source/Re186spectrum/gps/position         0 0 0 mm
+/gate/source/Re186spectrum/gps/type             Point
+/gate/source/Re186spectrum/gps/ang/type         iso
+/gate/source/Re186spectrum/visualize            100 red 3
+/gate/source/Re186spectrum/gps/confine          my_phantom
+/gate/source/list
+
+#----------------------------------------------------------------------#
+#               V I S U A L I S A T I O N                              #
+#----------------------------------------------------------------------#
+#/vis/disable
+
+#-----------------------------------------------------------------------#
+#          R A N D O M     G E N E R A T O R                            #
+#-----------------------------------------------------------------------#
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+/gate/random/verbose 2
+
+#-----------------------------------------------------------------------#
+#          S T A R T   S I M U L A T I O N                              #
+#-----------------------------------------------------------------------#
+/gate/application/setTotalNumberOfPrimaries 2e7
+/gate/application/start
+
+

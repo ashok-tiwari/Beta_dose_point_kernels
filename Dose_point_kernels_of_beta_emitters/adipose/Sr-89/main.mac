@@ -1,0 +1,183 @@
+#---------------------------------------------------------------------#
+#             1.    V E R B O S I T Y                                 #
+#---------------------------------------------------------------------#
+/gate/verbose Physic    0
+/gate/verbose Cuts	0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step	0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam	0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core	0
+
+/run/verbose 2
+/event/verbose 2
+/tracking/verbose 2
+/gate/geometry/setMaterialDatabase /Users/atiwr/gate_data_files/GateMaterials.db
+#----------------------------------------------------------------------#
+#              2.	W O R L D                                      #
+#----------------------------------------------------------------------#
+/gate/world/geometry/setXLength         7 cm
+/gate/world/geometry/setYLength         7 cm
+/gate/world/geometry/setZLength         7 cm
+/gate/world/setMaterial                 Water
+
+#----------------------------------------------------------------------#
+#             3.   P H A N T O M   G E O M E T R Y                     #
+#----------------------------------------------------------------------#
+/gate/world/daughters/name              my_phantom
+/gate/world/daughters/insert            sphere
+/gate/my_phantom/setMaterial            Adipose
+
+/gate/my_phantom/geometry/setRmax       16.50 mm
+/gate/my_phantom/geometry/setRmin       0. mm
+/gate/my_phantom/vis/forceSolid
+/gate/my_phantom/vis/setColor           grey
+/gate/my_phantom/placement/setTranslation 0 0 0 mm
+/gate/my_phantom/attachPhantomSD
+
+#----------------------------------------------------------------------#
+#             4.   A C T O R S                                         #
+#----------------------------------------------------------------------#
+/gate/actor/addActor DoseActor              dosimetry
+/gate/actor/dosimetry/attachTo              my_phantom
+/gate/actor/dosimetry/stepHitType           post
+
+/gate/actor/dosimetry/setPosition           -0.03478 -0.03478 -0.03478 mm
+/gate/actor/dosimetry/setVoxelSize          0.06956 0.06956 0.06956 mm
+#/gate/actor/dosimetry/setResolution        471 471 471
+/gate/actor/dosimetry/setSize               32.76276 32.76276 32.76276
+
+/gate/actor/dosimetry/enableDose            false
+/gate/actor/dosimetry/enableEdep            true
+/gate/actor/dosimetry/enableUncertaintyEdep true
+/gate/actor/dosimetry/enableSquaredEdep     true
+/gate/actor/dosimetry/save                  output/2e7-Sr89-adipose.mhd
+/gate/actor/dosimetry/saveEveryNSeconds     60
+
+/gate/actor/addActor                        SimulationStatisticActor stat
+/gate/actor/stat/save                       output/2e7_Sr89_adipose_stats.txt
+/gate/actor/stat/saveEveryNSeconds          60
+#----------------------------------------------------------------------#
+#             5.   P H Y S I C S   D E S C R I P T I O N               #
+#----------------------------------------------------------------------#
+/gate/physics/addPhysicsList  emstandard_opt3
+/gate/physics/addProcess RayleighScattering
+/gate/physics/processes/RayleighScattering/setModel PenelopeModel
+
+#----------------------------------------------------------------------#
+#         6. E L E C T R O M A G N E T I C    O P T I O N S            #
+#----------------------------------------------------------------------#
+/gate/physics/setEMin                   0.1 keV
+/gate/physics/setEMax                   10 GeV
+/gate/physics/setDEDXBinning            220
+/gate/physics/setLambdaBinning          220
+
+# Production Threshold cut: to avoid infrared divergence cut
+# below this threshold no secondary particles will be generated.
+
+/gate/physics/Gamma/SetCutInRegion	world 0.1 mm
+/gate/physics/Electron/SetCutInRegion   world 0.005 mm
+
+/gate/physics/Gamma/SetCutInRegion	my_phantom 0.1 mm     # 1 keV energy cut
+/gate/physics/Electron/SetCutInRegion   my_phantom 0.005 mm   # 3.86 KeV energy cut
+
+/gate/physics/SetMaxStepSizeInRegion my_phantom  0.06956 mm
+/gate/physics/ActivateStepLimiter e-
+
+# setpFunction
+/gate/physics/processes/ElectronIonisation/setStepFunction e- 0.0001  0.001 mm
+
+#----------------------------------------------------------------------#
+#                  7.   I N I T I A L I Z E                            #
+#----------------------------------------------------------------------#
+/gate/run/initialize
+/gate/physics/processList Enabled
+/gate/physics/processList Initialized
+/gate/physics/displayCuts
+
+#----------------------------------------------------------------------#
+#        Sr-89 beta spectrum : Discrete spectrum                       #
+#----------------------------------------------------------------------#
+/gate/source/addSource                Sr89spectrum	gps
+/gate/source/Sr89spectrum/attachTo                      my_phantom
+/gate/source/Sr89spectrum/gps/particle                  e-
+
+/gate/source/Sr89spectrum/gps/angtype          iso
+/gate/source/Sr89spectrum/gps/energytype       Arb
+/gate/source/Sr89spectrum/setIntensity         1
+/gate/source/Sr89spectrum/gps/histname         arb
+/gate/source/Sr89spectrum/gps/position         0 0 0 mm
+/gate/source/Sr89spectrum/gps/type             Point
+
+#/gate/source/Sr89spectrum/gps/setSpectrumFile  DiscreteSpectrum.txt
+
+######################################### Energy(MeV) ##### Intensity #
+/gate/source/Sr89spectrum/gps/hist/point 0.0          0.0
+/gate/source/Sr89spectrum/gps/hist/point 0.0373       5.56E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.1119       6.10E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.1865       6.55E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.2611       6.84E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.3357       7.02E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.4103       7.08E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.4849       7.06E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.5595       6.97E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.6341       6.81E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.7088       6.57E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.7834       6.26E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.8580       5.85E-02
+/gate/source/Sr89spectrum/gps/hist/point 0.9326       5.33E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.0072       4.70E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.0818       3.95E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.1564       3.11E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.2310       2.21E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.3056       1.33E-02
+/gate/source/Sr89spectrum/gps/hist/point 1.3802       5.61E-03
+/gate/source/Sr89spectrum/gps/hist/point 1.4548       1.22E-03
+
+/gate/source/Sr89spectrum/gps/arbint Lin     # Spline
+
+# first column is energy in MeV and second is intensity
+# Refrence: doseinfo-radar.com/BetaSpec.zip
+
+/gate/source/list
+/gate/output/verbose 2
+
+#----------------------------------------------------------------------#
+#               V I S U A L I S A T I O N                              #
+#----------------------------------------------------------------------#
+/vis/disable
+/vis/open OGLSQt
+/vis/viewer/reset
+/vis/viewer/set/viewpointThetaPhi 30 60
+/vis/viewer/zoom
+/vis/viewer/set/style wireframe
+/vis/drawVolume
+/vis/viewer/flush
+/vis/scene/add/trajectories
+/tracking/storeTrajectory 1
+/vis/scene/add/hits
+/vis/scene/endOfEventAction accumulate 10
+
+#-----------------------------------------------------------------------#
+#          R A N D O M     G E N E R A T O R                            #
+#-----------------------------------------------------------------------#
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+/gate/random/verbose 2
+
+#-----------------------------------------------------------------------#
+#          S T A R T   S I M U L A T I O N                              #
+#-----------------------------------------------------------------------#
+/gate/application/setTotalNumberOfPrimaries 2e7
+/gate/application/start
+
+
+
+

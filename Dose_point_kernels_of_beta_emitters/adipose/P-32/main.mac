@@ -1,0 +1,189 @@
+# GATE macros for the simulation of P-32 beta emitter to calculate the absorbed dose and 
+# beta dose point kernels using the spherical adipose phantom
+# By: Ashok Tiwari, Sep 14, 2018
+# PET center, University of Iowa Hospitals and Clinics
+
+#---------------------------------------------------------------------#
+#             1.    V E R B O S I T Y                                 #
+#---------------------------------------------------------------------#
+/gate/verbose Physic    0
+/gate/verbose Cuts	0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step	0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam	0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core	0
+
+/run/verbose 2
+/event/verbose 2
+/tracking/verbose 2
+
+/gate/geometry/setMaterialDatabase /Users/atiwr/gate_data_files/GateMaterials.db
+
+#----------------------------------------------------------------------#
+#              2.	W O R L D                                      #
+#----------------------------------------------------------------------#
+/gate/world/geometry/setXLength         5 cm
+/gate/world/geometry/setYLength         5 cm
+/gate/world/geometry/setZLength         5 cm
+/gate/world/setMaterial                 Water
+
+#----------------------------------------------------------------------#
+#             3.   P H A N T O M   G E O M E T R Y                     #
+#----------------------------------------------------------------------#
+/gate/world/daughters/name              my_phantom
+/gate/world/daughters/insert            sphere
+/gate/my_phantom/setMaterial            Adipose
+
+/gate/my_phantom/geometry/setRmax	20.80 mm
+/gate/my_phantom/geometry/setRmin	0. mm
+/gate/my_phantom/vis/forceSolid
+/gate/my_phantom/vis/setColor           grey
+/gate/my_phantom/placement/setTranslation 0 0 0 mm
+/gate/my_phantom/attachPhantomSD
+
+#----------------------------------------------------------------------#
+#             4.   A C T O R S                                         #
+#----------------------------------------------------------------------#
+/gate/actor/addActor DoseActor              dosimetry
+/gate/actor/dosimetry/attachTo              my_phantom
+/gate/actor/dosimetry/stepHitType           post
+
+/gate/actor/dosimetry/setPosition           -0.0416 -0.0416 -0.0416 mm
+/gate/actor/dosimetry/setVoxelSize          0.08320 0.08320 0.08320 mm
+#/gate/actor/dosimetry/setResolution        500 500 500
+/gate/actor/dosimetry/setSize               41.60 41.60 41.60 #size of diameter
+
+/gate/actor/dosimetry/enableDose            false
+/gate/actor/dosimetry/enableEdep            true
+/gate/actor/dosimetry/enableUncertaintyEdep true
+/gate/actor/dosimetry/enableSquaredEdep     true
+/gate/actor/dosimetry/save                  output/2e7_P32_adipose.mhd
+/gate/actor/dosimetry/saveEveryNSeconds     120
+
+/gate/actor/addActor                        SimulationStatisticActor stat
+/gate/actor/stat/save                       output/2e7_P32_adipose_stats.txt
+/gate/actor/stat/saveEveryNSeconds          120
+
+#----------------------------------------------------------------------#
+#             5.   P H Y S I C S   D E S C R I P T I O N               #
+#----------------------------------------------------------------------#
+/gate/physics/addPhysicsList  emstandard_opt3
+/gate/physics/addProcess RayleighScattering
+/gate/physics/processes/RayleighScattering/setModel PenelopeModel
+
+#----------------------------------------------------------------------#
+#         6. E L E C T R O M A G N E T I C    O P T I O N S            #
+#----------------------------------------------------------------------#
+/gate/physics/setEMin 			0.1 keV
+/gate/physics/setEMax 			10 GeV
+/gate/physics/setDEDXBinning  	 	220
+/gate/physics/setLambdaBinning	 	220
+
+# Production Threshold cut: to avoid infrared divergence cut
+# below this threshold no secondary particles will be generated.
+
+/gate/physics/Gamma/SetCutInRegion	world 0.1 mm
+/gate/physics/Electron/SetCutInRegion   world 0.05 mm
+
+/gate/physics/Gamma/SetCutInRegion	my_phantom 0.1 mm
+/gate/physics/Electron/SetCutInRegion   my_phantom 0.005 mm 
+
+/gate/physics/SetMaxStepSizeInRegion my_phantom  0.08320 mm
+/gate/physics/ActivateStepLimiter e-
+
+# setpFunction
+/gate/physics/processes/ElectronIonisation/setStepFunction e- 0.0001  0.001 mm
+
+#----------------------------------------------------------------------#
+#                  7.   I N I T I A L I Z E                            #
+#----------------------------------------------------------------------#
+/gate/run/initialize
+/gate/physics/processList Enabled
+/gate/physics/processList Initialized
+/gate/physics/displayCuts
+
+#----------------------------------------------------------------------#
+#             8.  S O U R C E   D E F I N I T I O N                   #
+#----------------------------------------------------------------------#
+# P-32-beta spectrum source
+/gate/source/addSource          P32betaspectrum            gps
+/gate/source/P32betaspectrum/attachTo                      my_phantom
+/gate/source/P32betaspectrum/gps/particle                  e-
+
+#/gate/source/P32betaspectrum/gps/setSpectrumFile           DiscreteSpectrum.txt
+# first column in the DiscreteSpectrum.txt file is energy in MeV and second
+# is intensity or probability weighting
+# Reference: doseinfo-radar.com/BetaSpec.zip
+
+/gate/source/P32betaspectrum/gps/angtype          iso
+/gate/source/P32betaspectrum/gps/energytype	  Arb
+/gate/source/P32betaspectrum/setIntensity         1
+/gate/source/P32betaspectrum/gps/histname         arb
+/gate/source/P32betaspectrum/gps/position         0 0 0 mm
+/gate/source/P32betaspectrum/gps/type             Point
+
+######################################### Energy(MeV) ##### Intensity #
+/gate/source/P32betaspectrum/gps/hist/point   0             0.0
+/gate/source/P32betaspectrum/gps/hist/point   0.0855     3.03E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.1710     4.38E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.2566     5.50E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.3421     6.43E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.4276     7.17E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.5131     7.70E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.5986     8.02E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.6842     8.11E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.7697     8.00E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.8552     7.68E-02
+/gate/source/P32betaspectrum/gps/hist/point   0.9407     7.16E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.0262     6.48E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.1118     5.66E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.1973     4.74E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.2828     3.76E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.3683     2.78E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.4538     1.85E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.5394     1.03E-02
+/gate/source/P32betaspectrum/gps/hist/point   1.6249     4.09E-03
+/gate/source/P32betaspectrum/gps/hist/point   1.7104     8.10E-04
+/gate/source/P32betaspectrum/gps/arbint Lin     # Spline
+
+#/gate/source/P32betaspectrum/visualize            100 red 3
+/gate/source/list
+/gate/output/verbose 2
+
+#----------------------------------------------------------------------#
+#            9.   V I S U A L I S A T I O N                            #
+#----------------------------------------------------------------------#
+/vis/disable
+/vis/open OGLIQt
+/vis/viewer/reset
+/vis/viewer/set/viewpointThetaPhi 30 60
+/vis/viewer/zoom
+/vis/viewer/set/style wireframe
+/vis/drawVolume
+/vis/viewer/flush
+/vis/scene/add/trajectories
+/tracking/storeTrajectory 1
+/vis/scene/add/hits
+/vis/scene/endOfEventAction accumulate 10
+
+#-----------------------------------------------------------------------#
+#         10.  R A N D O M     G E N E R A T O R                        #
+#-----------------------------------------------------------------------#
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+/gate/random/verbose 2
+
+#-----------------------------------------------------------------------#
+#        11.  S T A R T   S I M U L A T I O N                           #
+#-----------------------------------------------------------------------#
+/gate/application/setTotalNumberOfPrimaries 2e7
+/gate/application/start
+

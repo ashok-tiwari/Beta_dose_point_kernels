@@ -1,0 +1,35 @@
+#################### beta minus histogram ####################
+/gate/source/addSource                          histogram gps
+/gate/source/histogram/gps/particle             e-
+/gate/source/histogram/gps/energytype           UserSpectrum
+/gate/source/histogram/gps/setSpectrumFile	Y90betahistogram.txt
+/gate/source/histogram/setIntensity             1
+/gate/source/histogram/gps/centre               -0.0553 -0.0553 -0.0553 mm
+/gate/source/histogram/gps/angtype              iso
+/gate/source/histogram/gps/confine              my_phantom_phys
+##############################################################
+
+###################### monoenergetic photons discrete spectrum #####
+/gate/source/addSource                                  spectrumLine_ph gps
+/gate/source/spectrumLine_ph/gps/particle               gamma
+/gate/source/spectrumLine_ph/gps/energytype             UserSpectrum
+/gate/source/spectrumLine_ph/gps/setSpectrumFile        Y90monophdiscretespectrum.txt
+/gate/source/spectrumLine_ph/setIntensity               0.001466014
+/gate/source/spectrumLine_ph/gps/centre                 -0.0553 -0.0553 -0.0553 mm
+/gate/source/spectrumLine_ph/gps/angtype                iso
+/gate/source/spectrumLine_ph/gps/confine                my_phantom_phys
+####################################################################
+
+###################### monoenergetic electrons discrete spectrum #####
+/gate/source/addSource                                  spectrumLine_el gps
+/gate/source/spectrumLine_el/gps/particle               e-
+/gate/source/spectrumLine_el/gps/energytype             UserSpectrum
+/gate/source/spectrumLine_el/gps/setSpectrumFile        Y90monoeldiscretespectrum.txt
+/gate/source/spectrumLine_el/setIntensity               0.001388
+/gate/source/spectrumLine_el/gps/centre                 -0.0553 -0.0553 -0.0553 mm
+/gate/source/spectrumLine_el/gps/angtype                iso
+/gate/source/spectrumLine_el/gps/confine                my_phantom_phys
+####################################################################
+/gate/source/list
+/gate/output/verbose 2
+

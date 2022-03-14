@@ -1,0 +1,13 @@
+ObjectType = Image
+NDims = 3
+BinaryData = True
+BinaryDataByteOrderMSB = False
+CompressedData = False
+TransformMatrix = 1 0 0 0 1 0 0 0 1
+Offset = -0.27300000000000002 -0.27300000000000002 -0.27300000000000002
+CenterOfRotation = 0 0 0
+ElementSpacing = 0.0027300000656396151 0.0027300000656396151 0.0027300000656396151
+DimSize = 201 201 201
+AnatomicalOrientation = ???
+ElementType = MET_FLOAT
+ElementDataFile = 2e7_100KeV_water-Edep.raw
