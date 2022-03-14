@@ -1,4 +1,2 @@
-# Beta-emitters-dose-point-kernels
-# Beta-emitters-dose-point-kernels
-# Beta-emitters-dose-point-kernels
-# Beta-emitters-dose-point-kernels
+# Beta-emitting radionuclides dose point kernels
+
