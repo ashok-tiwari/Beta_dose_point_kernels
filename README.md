@@ -1,4 +1,4 @@
-## Dose point kernels simulations in GATE toolkit:
+## Dose point kernels simulations in GATE toolkit
 The prime motivation of the work was to generate the dose point kernels to be used as an input for the patient specific dosimetry post radiopharmaceutical therapy. In patient specific dosimetry, the dose point kernels are convolved with patient specific activity map obtained from quantitative imaging for absorebd dose calculations.
 
 ### (1) Beta-emitting radionuclides dose point kernels
