@@ -10,11 +10,11 @@
 
 /gate/source/Y90Source/gps/angtype	iso
 /gate/source/Y90Source/gps/energytype 	Arb
-#/gate/source/Y90Source/setIntensity     1
-/gate/source/Y90Source/setActivity             3700000. becquerel
+/gate/source/Y90Source/setIntensity     1
+#/gate/source/Y90Source/setActivity             3700000. becquerel
 
 /gate/source/Y90Source/gps/histname 	arb
-/gate/source/Y90Source/gps/type 	Point
+/gate/source/Y90Source/gps/type 	    Point
 
 #/gate/source/Y90Source/gps/emin 	0. keV
 #/gate/source/Y90Source/gps/emax 	2284. keV
@@ -158,8 +158,8 @@
 /gate/source/mono_ph/gps/angtype 	iso
 /gate/source/mono_ph/gps/energytype 	User
 /gate/source/mono_ph/gps/histname 	energy
-#/gate/source/mono_ph/setIntensity  	0.001466014
-/gate/source/mono_ph/setActivity             3700000. becquerel
+/gate/source/mono_ph/setIntensity  	0.001466014
+#/gate/source/mono_ph/setActivity             3700000. becquerel
 
 /gate/source/mono_ph/gps/type           Point
 
@@ -293,8 +293,9 @@
 /gate/source/mono_el/gps/particle 	e-
 
 /gate/source/mono_el/gps/angtype 	iso
-#/gate/source/mono_el/setIntensity 	0.000115
-/gate/source/mono_el/setActivity        3700000. becquerel
+/gate/source/mono_el/setIntensity 	0.000115
+#/gate/source/mono_el/setActivity        3700000. becquerel
+
 /gate/source/mono_el/gps/energytype 	User
 /gate/source/mono_el/gps/histname 	energy
 /gate/source/mono_el/gps/type           Point
